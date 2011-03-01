@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@android:color/white">
+
+	<ImageView android:id="@+id/ImageViewLogo"
+		android:layout_width="fill_parent" 
+		android:background="@android:color/white"
+		android:src="@drawable/logo"
+		android:layout_height="wrap_content"
+		android:scaleType="center"/>
+
+	<RelativeLayout android:orientation="vertical" 
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:background="@android:color/white">
+		
+		<TextView android:layout_height="wrap_content" 
+			android:layout_width="wrap_content" 
+			android:id="@+id/currentAngleLabel" 
+			android:layout_below="@+id/ImageViewLogo" 
+			android:text="Current Angle: "
+			android:textSize="18dip"
+			android:textColor="@android:color/black"
+			android:paddingTop="16dip"/>
+		
+		<TextView android:layout_height="wrap_content" 
+			android:layout_width="wrap_content" 
+			android:id="@+id/currentAngle" 
+			android:layout_toRightOf="@+id/currentAngleLabel" 
+			android:layout_below="@+id/ImageViewLogo" 
+			android:text=""
+			android:textSize="18dip"
+			android:textColor="@android:color/black"
+			android:paddingTop="16dip"
+			android:paddingBottom="16dip"/>
+	
+	</RelativeLayout>
+	
+	
+	<RelativeLayout android:orientation="vertical" 
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:background="@android:color/white">
+				
+		<TextView android:layout_height="wrap_content" 
+			android:layout_width="wrap_content" 
+			android:id="@+id/distanceLabel" 
+			android:layout_below="@+id/currentAngleLabel" 
+			android:text="Distance from the rocket: "
+			android:textSize="18dip"
+			android:textColor="@android:color/black"
+			android:paddingTop="12dip"/>
+				
+		<EditText android:layout_height="wrap_content" 
+			android:id="@+id/distance" 
+			android:layout_width="fill_parent" 
+			android:text="0" 
+			android:layout_toRightOf="@+id/distanceLabel" 
+			android:layout_below="@+id/currentAngleLabel"
+			android:inputType="number"/>
+			
+	</RelativeLayout>
+
+	<RelativeLayout android:orientation="vertical" 
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:background="@android:color/white">
+		
+		<TextView android:layout_height="wrap_content" 
+			android:layout_width="wrap_content" 
+			android:id="@+id/currentAltitudeLabel" 
+			android:layout_below="@+id/distanceLabel" 
+			android:text="Current Altitude: "
+			android:textSize="18dip"
+			android:textColor="@android:color/black"
+			android:paddingTop="16dip"/>
+			
+		<TextView android:layout_height="wrap_content" 
+			android:layout_width="wrap_content" 
+			android:id="@+id/currentAltitude" 
+			android:layout_toRightOf="@+id/currentAltitudeLabel" 
+			android:layout_below="@+id/distanceLabel" 
+			android:text=""
+			android:textSize="18dip"
+			android:textColor="@android:color/black"
+			android:paddingTop="16dip"/>
+	
+	</RelativeLayout>
+	
+	<RelativeLayout android:orientation="vertical" 
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:background="@android:color/white">
+		
+		<TextView android:layout_height="wrap_content" 
+			android:layout_width="wrap_content" 
+			android:id="@+id/flightTimeLabel" 
+			android:layout_below="@+id/currentAltitudeLabel" 
+			android:text="Time of flight: "
+			android:textSize="18dip"
+			android:textColor="@android:color/black"
+			android:paddingTop="16dip"/>
+			
+		<TextView android:layout_height="wrap_content" 
+			android:layout_width="wrap_content" 
+			android:id="@+id/flightTime" 
+			android:layout_toRightOf="@+id/flightTimeLabel" 
+			android:layout_below="@+id/currentAltitudeLabel" 
+			android:text=""
+			android:textSize="18dip"
+			android:textColor="@android:color/black"
+			android:paddingTop="16dip"/>
+	
+	</RelativeLayout>
+	
+	<Button android:text="Touch to start" 
+		android:textSize="30dip"
+		android:id="@+id/startStop" 
+		android:layout_width="fill_parent" 
+		android:layout_height="fill_parent"
+		android:paddingTop="16dip"/>
+	
+</LinearLayout>

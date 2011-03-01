@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_sensor_root"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="10dp">
+    
+    <TextView
+		android:id="@+id/titleLabel"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="Title : "
+		android:layout_alignParentLeft="true"/>
+
+    <EditText
+        android:id="@+id/titleInput"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/editbox_background"
+        android:layout_toRightOf="@id/titleLabel"
+        android:paddingLeft="6dip"/>
+
+</RelativeLayout>
