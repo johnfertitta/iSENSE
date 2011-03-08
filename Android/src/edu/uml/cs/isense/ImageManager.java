@@ -101,6 +101,7 @@ public class ImageManager {
     			if (drawable != null) {
     				Message message = handler.obtainMessage(1, drawable);
     				handler.sendMessage(message);
+    				return;
     			} else {
     				return;
     			}
@@ -147,6 +148,7 @@ public class ImageManager {
     public void fetchBitmapOnThread(final String urlString, final ImageView imageView) {
     	if (bitmapMap.containsKey(urlString)) {
 			imageView.setImageBitmap(bitmapMap.get(urlString));
+			return;
     	}
 
     	final Handler handler = new Handler() {
@@ -163,6 +165,7 @@ public class ImageManager {
     			if (bitmap != null) {
     				Message message = handler.obtainMessage(1, bitmap);
     				handler.sendMessage(message);
+    				return;
     			} else {
     				return;
     			}

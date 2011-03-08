@@ -93,7 +93,7 @@ public class ExperimentAdapter extends ArrayAdapter<Experiment> {
                 	}
                 }
                 
-                ImageView imgView = (ImageView) v.findViewById(R.id.icon);
+                /*ImageView imgView = (ImageView) v.findViewById(R.id.icon);
             	
                 imgView.setAdjustViewBounds(true);
                 imgView.setMaxHeight(maxDimension);
@@ -105,7 +105,7 @@ public class ExperimentAdapter extends ArrayAdapter<Experiment> {
                     im.fetchBitmapOnThread(e.provider_url, imgView);
                 } else {
                 	imgView.setVisibility(View.GONE);
-                }
+                }*/
             }
     	} else {
     		if (!allItemsLoaded) {
