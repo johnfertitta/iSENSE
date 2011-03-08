@@ -1,5 +1,6 @@
 package edu.uml.cs.isense.sensors;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -219,6 +220,8 @@ public class Sensors extends Activity {
             	case MESSAGE_STATE_CHANGE:
             		switch (msg.arg1) {
 	            		case BluetoothService.STATE_CONNECTED:
+	                		mSensorMap.get(TYPE_PINPOINT).setText("Connected");	               
+
 	                		pinpoint = new pinpointInterface(mBluetoothService);
 	                        mSensorsService.setPinpoint(pinpoint);
 	                        
@@ -226,8 +229,8 @@ public class Sensors extends Activity {
 	                        
 	                		break;
 	                	case BluetoothService.STATE_CONNECTING:
+	                		mSensorMap.get(TYPE_PINPOINT).setText("Connecting...");	               
 	                		break;
-	                		
 	                	case BluetoothService.STATE_LISTEN:
 	                		
 	                	case BluetoothService.STATE_NONE:	

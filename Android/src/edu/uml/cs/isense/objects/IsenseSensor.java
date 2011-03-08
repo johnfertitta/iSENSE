@@ -129,6 +129,10 @@ public class IsenseSensor {
 		mCheckBox.setText(mSensorName);
 	}
 	
+	public void setText(String text) {
+		mTextView.setText(text);
+	}
+	
 	public void addToHeader(ArrayList<String> names) {
 		mHeader.addAll(names);
 	}
