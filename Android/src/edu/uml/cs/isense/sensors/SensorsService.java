@@ -1,5 +1,6 @@
 package edu.uml.cs.isense.sensors;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,13 +25,17 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 import edu.uml.cs.isense.comm.RestAPI;
 import edu.uml.cs.isense.objects.IsenseSensor;
+import edu.uml.cs.isense.pincushion.BluetoothService;
+import edu.uml.cs.isense.pincushion.pinpointInterface;
 
 public class SensorsService extends Service {
 	private Timer recordTimer;
 	private Timer timeTimer;
 	private Timer updateTimer;
+	private Timer pinPointUpdater;
 	private int INTERVAL;
 	
 	private LocationManager mLocationManager;
@@ -53,8 +58,11 @@ public class SensorsService extends Service {
 			
 	private boolean timeTimerRunning = false;
 	private boolean updateTimerRunning = false;
+	private boolean pinPointTimerRunning = false;
 	
 	private boolean isSetup = false;
+		
+    private static pinpointInterface mPinpoint = null;
 	
 	@Override
 	public void onCreate() {
@@ -72,6 +80,9 @@ public class SensorsService extends Service {
 		if (timeTimer != null) {
 			timeTimer.cancel();
 		}
+		if (pinPointUpdater != null) {
+			pinPointUpdater.cancel();
+		}
 		
 		mSensorManager.unregisterListener(sensorListener);
 		mLocationManager.removeUpdates(locationListener);
@@ -83,6 +94,10 @@ public class SensorsService extends Service {
 	}
 	
 	public class SensorServiceBinder extends Binder implements ISensorsService {
+		public void setPinpoint(pinpointInterface ppi) {
+			mPinpoint = ppi;
+		}
+		
 		public void setup(LocationManager lm, SensorManager sm, Handler handler, int rate) {
 			if (isSetup) return;
 			
@@ -162,6 +177,9 @@ public class SensorsService extends Service {
 				} else {
 					return false;
 				}
+			} else if (id == Sensors.TYPE_PINPOINT) {
+				startPinPoint();
+				pinPointTimerRunning = true;
 			} else {
 				return mSensorManager.registerListener(sensorListener, mSensorManager.getDefaultSensor(id), SensorManager.SENSOR_DELAY_NORMAL);
 			}
@@ -179,6 +197,14 @@ public class SensorsService extends Service {
 				}
 			} else if (id == Sensors.TYPE_LOCATION) {
 				mLocationManager.removeUpdates(locationListener);
+			} else if (id == Sensors.TYPE_PINPOINT) {
+				if (pinPointTimerRunning) {
+					if (pinPointUpdater != null) {
+						pinPointUpdater.cancel();
+						pinPointTimerRunning = false;
+					}
+				}
+				mPinpoint = null;
 			} else {
 				mSensorManager.unregisterListener(sensorListener, mSensorManager.getDefaultSensor(id));
 			}
@@ -200,6 +226,21 @@ public class SensorsService extends Service {
 		}
 	}
 
+	private void startPinPoint() {
+		pinPointUpdater = new Timer();
+		pinPointUpdater.scheduleAtFixedRate(new TimerTask() {
+			public void run() {
+				IsenseSensor i = Sensors.mSensorMap.get(Sensors.TYPE_PINPOINT);
+				try {
+					i.setValue(mPinpoint.requestDataStream());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}, 0, INTERVAL);
+	}
+	
 	private void startService() {
 		recordTimer = new Timer();
 		recordTimer.scheduleAtFixedRate(new TimerTask() {

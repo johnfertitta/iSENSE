@@ -9,9 +9,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.uml.cs.isense.pincushion.BluetoothService;
+import edu.uml.cs.isense.pincushion.BluetoothWrapper;
+import edu.uml.cs.isense.pincushion.DeviceListActivity;
 import edu.uml.cs.isense.Isense;
 import edu.uml.cs.isense.LoginActivity;
 import edu.uml.cs.isense.R;
+import edu.uml.cs.isense.pincushion.pinpointInterface;
 import edu.uml.cs.isense.comm.RestAPI;
 import edu.uml.cs.isense.objects.IsenseSensor;
 import edu.uml.cs.isense.sessions.SessionList;
@@ -21,6 +25,8 @@ import edu.uml.cs.isense.visualizations.Visualizations;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -50,20 +56,50 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout.LayoutParams;
 
 public class Sensors extends Activity {
+	// Bluetooth states
+    public static final int MESSAGE_STATE_CHANGE = 1;
+    public static final int MESSAGE_READ = 2;
+    public static final int MESSAGE_WRITE = 3;
+    public static final int MESSAGE_DEVICE_NAME = 4;
+    public static final int MESSAGE_TOAST = 5;
+
+    public static final String DEVICE_NAME = "device_name";
+    public static final String TOAST = "toast";
+
+    private static final int REQUEST_CONNECT_DEVICE = 4;
+    private static final int REQUEST_ENABLE_BT = 5;
+    
+    private BluetoothAdapter mBluetoothAdapter = null;
+
+    private static BluetoothService mBluetoothService = null;
+    
+    private ArrayAdapter<String> mMessageArrayAdapter;
+    
+    private TextView mTitle;
+    
+    private static String mConnectedDeviceName = null;
+    
+    static pinpointInterface pinpoint;
+	
 	public static final int TYPE_LOCATION = -2;
 	public static final int TYPE_TIME = -1;
+	public static final int TYPE_PINPOINT = -3;
 	
 	private static final int REQUEST_CODE = 100;
 	public static final int SENSOR_COUNT = 10;
+	
 	// Intent request codes
     private static final int REQUEST_DATA_LIST_FOR_VIEWING = 1;
 	private static final int REQUEST_DATA_LIST_FOR_UPLOAD = 2;
@@ -72,8 +108,8 @@ public class Sensors extends Activity {
 	private static LocationManager lm;
 	private static SensorManager sensorMan;
 
-	static //List of available Sensors
-	List<Sensor> sensors;
+	//List of available Sensors
+	static List<Sensor> sensors;
 	private Button recordButton;
 		
 	public static HashMap<Integer, IsenseSensor> mSensorMap;
@@ -110,6 +146,17 @@ public class Sensors extends Activity {
 	
 	private boolean recording = false;
 	private boolean streamingMode = false;
+	private static boolean mBluetoothAvailable;
+	
+    static {
+    	try {
+    		BluetoothWrapper.checkAvailable();
+    		mBluetoothAvailable = true;
+    	} catch (Throwable t) {
+    		Log.d("huh", "not avail?");
+    		mBluetoothAvailable = false;
+    	}
+    }
 	
 	private OnCheckedChangeListener checkChanged = new OnCheckedChangeListener() {
 		@Override
@@ -120,14 +167,42 @@ public class Sensors extends Activity {
 				} else {
 					mSensorsService.enableSensor(TYPE_LOCATION);
 				}
-			}
-			if (isChecked) {
-				mSensorsService.enableSensor(v.getId());
+				if (!isChecked) {
+					mSensorsService.disableSensor(v.getId());
+				}
+			} else if (v.getId() == TYPE_PINPOINT) {
+				if(isChecked) {
+					if (mBluetoothAvailable) {
+						if (!BluetoothWrapper.isEnabled()) {
+							Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+							startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+						} else {
+							setupConnection();
+						}
+					}
+				} else {
+					mSensorsService.disableSensor(v.getId());
+				}
 			} else {
-				mSensorsService.disableSensor(v.getId());
+				if (isChecked) {
+					mSensorsService.enableSensor(v.getId());
+				} else {
+					mSensorsService.disableSensor(v.getId());
+				}
 			}
 		}
 	};
+	
+	private void setupConnection() {
+        // Initialize the BluetoothService to perform bluetooth connections
+        mBluetoothService = new BluetoothService(this, mHandler);
+        if (mBluetoothService.getState() == BluetoothService.STATE_NONE) {
+            // Start the Bluetooth service
+            mBluetoothService.start();
+        }
+        Intent serverIntent = new Intent(getBaseContext(), DeviceListActivity.class);
+        startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+    }
 	
     private static Handler mHandler = new Handler() {
         @Override
@@ -141,9 +216,27 @@ public class Sensors extends Activity {
                		 	s.updateView();
             		}
             	    break;
+            	case MESSAGE_STATE_CHANGE:
+            		switch (msg.arg1) {
+	            		case BluetoothService.STATE_CONNECTED:
+	                		pinpoint = new pinpointInterface(mBluetoothService);
+	                        mSensorsService.setPinpoint(pinpoint);
+	                        
+	                        mSensorsService.enableSensor(TYPE_PINPOINT);
+	                        
+	                		break;
+	                	case BluetoothService.STATE_CONNECTING:
+	                		break;
+	                		
+	                	case BluetoothService.STATE_LISTEN:
+	                		
+	                	case BluetoothService.STATE_NONE:	
+	                		break;
+            		}
             }
         }
     };
+
 	
 	private  ServiceConnection mConnection = new ServiceConnection() {
 		@Override
@@ -387,10 +480,18 @@ public class Sensors extends Activity {
 			mSensorMap.put(TYPE_LOCATION, temp);
 		}
 		
-		final int sdkVersion = Integer.parseInt(Build.VERSION.SDK);
-	    if (sdkVersion >= Build.VERSION_CODES.ECLAIR) {
+		if (mBluetoothAvailable) {
 	    	//We should support bluetooth in versions greater than ECLAIR (API level 5).
-	    }
+	    	mBluetoothAdapter = BluetoothWrapper.getDefaultAdapter();
+		    // If the adapter is null, then Bluetooth is not supported
+		    if (mBluetoothAdapter != null) {
+		    	temp = new IsenseSensor(mContext, TYPE_PINPOINT);
+		    	inl.addView(temp.getLayout());
+		    	
+		    	temp.setListener(checkChanged);
+		    	mSensorMap.put(TYPE_PINPOINT, temp);
+		    }
+		}
 
 		recordButton = new Button(this);
 		recordButton.setText("Start Recording");
@@ -957,6 +1058,28 @@ public class Sensors extends Activity {
         			showDialog(Isense.DIALOG_READY_TO_STREAM);
         		}   			
     			break;
+        	case REQUEST_ENABLE_BT:
+        		if (resultCode == Activity.RESULT_OK) {
+        			setupConnection();
+        		} else {
+        			Toast.makeText(this, R.string.bt_not_enabled_leaving, Toast.LENGTH_SHORT).show();
+        		}
+        		break;
+        	case REQUEST_CONNECT_DEVICE:
+                // When DeviceListActivity returns with a device to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    // Get the device MAC address
+                    String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                    // Get the BLuetoothDevice object
+                	if (mBluetoothAvailable) {
+                		BluetoothDevice device = BluetoothWrapper.getRemoteDevice(address);
+                		// Attempt to connect to the device
+                		mBluetoothService.connect(device);
+                	}
+                } else {
+                    mSensorMap.get(TYPE_PINPOINT).setChecked(false);
+                }
+                break;
         }
     }
 }

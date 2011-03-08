@@ -42,6 +42,13 @@ public class IsenseSensor {
 			mHeader.add("Longitude");
 			mHeader.add("Altitude");
 			mSensorName = "Location";
+		} else if (type == Sensors.TYPE_PINPOINT) {
+			mHeader.add("Acceleration X");
+			mHeader.add("Acceleration Y");
+			mHeader.add("Acceleration Z");
+			mHeader.add("Light");
+			mHeader.add("Temperature");
+			mSensorName = "PINPoint";
 		}
 		
 		mValues = new ArrayList<Object>();
@@ -57,7 +64,6 @@ public class IsenseSensor {
 		mCheckBox.setId(mSensorType);
 		mCheckBox.setTextColor(Color.BLACK);
 		
-		 
 		mLayout.addView(mCheckBox);
 		
 		RelativeLayout.LayoutParams temp = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -121,6 +127,14 @@ public class IsenseSensor {
 		mLayout.addView(mTextView, temp);
 		
 		mCheckBox.setText(mSensorName);
+	}
+	
+	public void addToHeader(ArrayList<String> names) {
+		mHeader.addAll(names);
+	}
+	
+	public void addToHeader(String name) {
+		mHeader.add(name);
 	}
 	
 	public void setListener(OnCheckedChangeListener l) {

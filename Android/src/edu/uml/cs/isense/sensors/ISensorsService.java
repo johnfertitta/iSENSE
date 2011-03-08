@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 import org.json.JSONArray;
 
+import edu.uml.cs.isense.pincushion.pinpointInterface;
+
 import android.hardware.SensorManager;
 import android.location.LocationManager;
 import android.os.Handler;
@@ -22,4 +24,6 @@ public interface ISensorsService {
 	public void disableSensor(int id);
 	
 	public void updateRate(int rate);
+	
+	public void setPinpoint(pinpointInterface ppi);
 }
